@@ -1,0 +1,552 @@
+<title>Bankierstwo pana Scrooge'a</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ebdfc4; --paper-2:#e2d3b2; --paper-3:#d6c49c;
+    --ink:#2a2118; --ink-2:#4d3f30; --ink-3:#7a6650;
+    --red:#8c2a1c; --gold:#b8892f; --gold-2:#e2b75a;
+    --river:#9fae9f; --night:#14100c;
+    --display:"IM Fell English", "Iowan Old Style", Georgia, serif;
+    --sc:"IM Fell English SC", "IM Fell English", Georgia, serif;
+    --body:"EB Garamond", Garamond, Georgia, serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--night);color:var(--ink);font-family:var(--body);overflow:hidden}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  .app{display:grid;grid-template-columns:min(36vw,calc((100vh - 200px) * .5625)) 1fr;height:100%}
+
+  /* ---------- LEFT: the counting-house window ---------- */
+  .office{position:relative;display:flex;flex-direction:column;background:var(--night);border-right:1px solid #3a2c1e;min-height:0}
+  .film{position:relative;flex:0 0 auto;width:100%;aspect-ratio:9/16;overflow:hidden;background:#000}
+  .film video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:sepia(.12) contrast(1.03)}
+  .film::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 45%,transparent 60%,rgba(10,7,4,.55) 100%)}
+  .clipbar{position:absolute;z-index:2;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.08)}
+  .clipbar i{display:block;height:100%;width:0;background:var(--gold-2)}
+
+  .masthead{position:absolute;z-index:2;top:22px;left:clamp(16px,3vw,40px);pointer-events:none;max-width:60%}
+  .masthead .kicker{font-family:var(--sc);font-size:12.5px;letter-spacing:.22em;color:var(--red)}
+  .masthead h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,3.2vw,52px);line-height:.98;margin-top:6px;color:var(--ink);text-wrap:balance;
+    text-shadow:0 0 18px var(--paper),0 0 6px var(--paper)}
+  .masthead h1 em{color:var(--red)}
+  .masthead p{font-family:var(--display);font-style:italic;font-size:14px;color:var(--ink-3);margin-top:6px;text-shadow:0 0 8px var(--paper)}
+  .sound{position:absolute;z-index:3;top:20px;right:18px;width:38px;height:38px;border-radius:50%;
+    border:1px solid rgba(226,183,90,.5);color:var(--gold-2);display:grid;place-items:center;background:rgba(20,16,12,.5);backdrop-filter:blur(4px)}
+  .sound:hover{background:rgba(226,183,90,.15)}
+  .sound svg{width:18px;height:18px}
+
+  .ledger{position:relative;z-index:2;flex:1 1 auto;min-height:0;margin:14px;display:flex;flex-direction:column;background:var(--paper);border-radius:2px;
+    box-shadow:0 20px 50px rgba(0,0,0,.6),inset 0 0 0 1px rgba(42,33,24,.25);padding:12px 16px 8px;
+    background-image:repeating-linear-gradient(to bottom,transparent 0 25px,rgba(140,42,28,.13) 25px 26px)}
+  .ledger header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px double var(--ink-2);padding-bottom:6px}
+  .ledger header b{font-family:var(--sc);font-weight:400;font-size:15px;letter-spacing:.08em}
+  .ledger header span{font-family:var(--display);font-style:italic;font-size:13px;color:var(--ink-3)}
+  .ledger ol{list-style:none;flex:1 1 auto;min-height:26px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+  .ledger li{flex-shrink:0;display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:baseline;height:26px;line-height:26px;font-size:14.5px;
+    animation:ink .7s ease both;white-space:nowrap}
+  .ledger li .n{font-family:var(--display);font-style:italic;color:var(--ink-3);font-size:12px}
+  .ledger li .t{overflow:hidden;text-overflow:ellipsis}
+  .ledger li .v{font-variant-numeric:tabular-nums;font-weight:600}
+  .ledger li .v.minus{color:var(--red)}
+  .ledger li.now{background:rgba(184,137,47,.18)}
+  @keyframes ink{from{opacity:0;transform:translateX(-6px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
+
+  /* ---------- RIGHT: the map ---------- */
+  .mapwrap{position:relative;overflow:hidden;background:var(--paper);cursor:grab}
+  .mapwrap.dragging{cursor:grabbing}
+  #map{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .mapwrap::after{content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(80,55,25,.45),inset 0 0 30px rgba(80,55,25,.35)}
+
+  .street{fill:none;stroke:var(--ink-2);stroke-linecap:round}
+  .street.main{stroke-width:7;opacity:.55}
+  .street.minor{stroke-width:3;opacity:.35}
+  .block{fill:var(--paper-3);stroke:var(--ink-2);stroke-width:.8;opacity:.55}
+  .lbl-district{font-family:var(--sc);fill:var(--ink-2);letter-spacing:.35em;opacity:.55}
+  .lbl-street{font-family:var(--display);font-style:italic;fill:var(--ink-2);opacity:.75}
+  .route-bg{fill:none;stroke:var(--ink-3);stroke-width:3;stroke-dasharray:2 10;stroke-linecap:round;opacity:.5}
+  .route{fill:none;stroke:var(--red);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round}
+
+  .pin{cursor:pointer}
+  .pin .halo{fill:var(--gold);opacity:0;transform-box:fill-box;transform-origin:center}
+  .pin .disc{fill:var(--paper);stroke:var(--ink);stroke-width:3;transition:fill .3s}
+  .pin .num{font-family:var(--display);font-size:22px;fill:var(--ink);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .pin .name{font-family:var(--sc);font-size:19px;fill:var(--ink);letter-spacing:.04em;paint-order:stroke;stroke:var(--paper);stroke-width:6px;stroke-linejoin:round;pointer-events:none}
+  .pin.visited .disc{fill:var(--paper-3)}
+  .pin.active .disc{fill:var(--red);stroke:var(--ink)}
+  .pin.active .num{fill:#f6ead0}
+  .pin.active .halo{animation:halo 2.2s ease-out infinite}
+  .pin:hover .disc{fill:var(--gold-2)}
+  @keyframes halo{0%{opacity:.55;transform:scale(1)}100%{opacity:0;transform:scale(2.6)}}
+
+  /* card */
+  .card{position:absolute;left:clamp(16px,3vw,40px);bottom:96px;width:min(460px,calc(100% - 32px));
+    background:#f5ecd8;border:1px solid rgba(42,33,24,.4);box-shadow:0 1px 0 #fff8 inset,0 24px 60px rgba(60,40,15,.35);
+    padding:22px 26px 20px;transition:opacity .45s,transform .45s}
+  .card.out{opacity:0;transform:translateY(10px)}
+  .card::before{content:"";position:absolute;inset:5px;border:1px solid rgba(42,33,24,.18);pointer-events:none}
+  .card .meta{display:flex;gap:10px;align-items:baseline;font-family:var(--sc);font-size:12.5px;letter-spacing:.16em;color:var(--red)}
+  .card .meta .where{color:var(--ink-3)}
+  .card h2{font-family:var(--display);font-weight:400;font-size:clamp(25px,2.1vw,32px);line-height:1.08;margin:8px 0 10px;text-wrap:balance}
+  .card p{font-size:16.5px;line-height:1.5;color:var(--ink-2);text-wrap:pretty}
+  .card blockquote{margin-top:12px;padding-left:14px;border-left:3px solid var(--gold);font-family:var(--display);font-style:italic;font-size:15.5px;line-height:1.4;color:var(--ink)}
+  .card blockquote cite{display:block;font-style:normal;font-family:var(--sc);font-size:11.5px;letter-spacing:.14em;color:var(--ink-3);margin-top:4px}
+
+  .voice{display:none;margin-top:12px;padding-top:10px;border-top:1px dashed rgba(42,33,24,.3);font-size:14px;color:var(--ink-2);cursor:pointer;
+    grid-template-columns:28px 1fr;gap:10px;align-items:center}
+  .voice.on{display:grid}
+  .voice .ic{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--gold-2);display:grid;place-items:center}
+  .voice .ic svg{width:12px;height:12px}
+  .voice b{font-family:var(--sc);font-weight:400;font-size:11.5px;letter-spacing:.14em;color:var(--red);display:block}
+  .voice:hover .ic{background:var(--red)}
+  .compass{position:absolute;right:26px;top:22px;width:74px;opacity:.75;pointer-events:none}
+  .title-plate{position:absolute;right:26px;top:108px;text-align:right;pointer-events:none}
+  .title-plate b{display:block;font-family:var(--sc);font-weight:400;font-size:13px;letter-spacing:.24em;color:var(--ink-2)}
+  .title-plate i{font-family:var(--display);font-size:13px;color:var(--ink-3)}
+
+  /* timeline */
+  .bar{position:absolute;left:0;right:0;bottom:0;height:74px;display:flex;align-items:center;gap:14px;padding:0 clamp(16px,3vw,40px);
+    background:linear-gradient(to top,rgba(235,223,196,1) 55%,rgba(235,223,196,0));}
+  .ctrl{width:42px;height:42px;flex:0 0 42px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center}
+  .ctrl:hover{background:var(--red)}
+  .ctrl svg{width:16px;height:16px}
+  .ctrl.ghost{background:transparent;color:var(--ink);border:1px solid rgba(42,33,24,.4);width:34px;height:34px;flex-basis:34px}
+  .ctrl.ghost:hover{background:var(--paper-3)}
+  .steps{flex:1;display:flex;gap:4px;align-items:center;min-width:0}
+  .step{flex:1;height:22px;position:relative;cursor:pointer}
+  .step::before{content:"";position:absolute;left:0;right:0;top:10px;height:2px;background:rgba(42,33,24,.22)}
+  .step i{position:absolute;left:0;top:10px;height:2px;width:0;background:var(--red)}
+  .step.done i{width:100%}
+  .step:hover::before{background:rgba(42,33,24,.5)}
+  .step span{position:absolute;left:0;bottom:-14px;font-family:var(--display);font-style:italic;font-size:11px;color:var(--ink-3);opacity:0;transition:opacity .2s;white-space:nowrap}
+  .step:hover span,.step.cur span{opacity:1}
+  .status{font-family:var(--display);font-style:italic;font-size:13px;color:var(--ink-3);white-space:nowrap;min-width:88px;text-align:right}
+
+  @media (max-width:760px){
+    html,body{overflow:auto}
+    .app{grid-template-columns:1fr;grid-template-rows:auto 92vh;height:auto}
+    .office{align-items:center;padding-block:12px}
+    .film{width:auto;height:64vh;max-width:100%}
+    .ledger{display:none}
+    .card{bottom:86px;padding:16px 18px}
+    .card p{font-size:15px}
+    .compass{display:none}
+    .masthead h1{font-size:26px}
+  }
+  @media (prefers-reduced-motion:reduce){.pin.active .halo{animation:none}}
+</style>
+<div class="app">
+
+  <aside class="office">
+    <div class="film">
+      <video id="film" src="scrooge-small.mp4" autoplay muted loop playsinline preload="auto"></video>
+      <div class="clipbar"><i id="clipbar"></i></div>
+      <button class="sound" id="sound" aria-label="Włącz dźwięk" title="Dźwięk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path id="sndwave" d="M17 9l4 6M21 9l-4 6"/></svg>
+      </button>
+    </div>
+    <section class="ledger" aria-label="Księga rachunkowa">
+      <header><b>Księga główna</b><span>Winien · Ma</span></header>
+      <ol id="ledger"></ol>
+    </section>
+  </aside>
+
+  <main class="mapwrap" id="mapwrap">
+    <svg id="map" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-label="Mapa Londynu Scrooge'a">
+      <defs>
+        <filter id="grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/>
+          <feColorMatrix in="n" type="matrix" values="0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .12  0 0 0 .22 0"/>
+        </filter>
+        <filter id="stain">
+          <feTurbulence type="fractalNoise" baseFrequency=".004" numOctaves="3" seed="3"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 .55  0 0 0 0 .4  0 0 0 0 .2  0 0 0 .5 -.12"/>
+        </filter>
+        <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+          <line x1="0" y1="0" x2="0" y2="9" stroke="#5a6b5a" stroke-width="1.2" opacity=".5"/>
+        </pattern>
+      </defs>
+      <g id="cam">
+        <rect x="-400" y="-400" width="3200" height="2400" fill="#ebdfc4"/>
+        <rect x="-400" y="-400" width="3200" height="2400" filter="url(#stain)"/>
+        <g id="blocks"></g>
+        <g id="streets"></g>
+        <g id="river"></g>
+        <g id="labels"></g>
+        <path id="routeBg" class="route-bg"/>
+        <g id="routes"></g>
+        <g id="pins"></g>
+        <rect x="-400" y="-400" width="3200" height="2400" filter="url(#grain)" pointer-events="none"/>
+      </g>
+    </svg>
+
+    <svg class="compass" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2118" stroke-width="1"/>
+      <circle cx="50" cy="50" r="34" fill="none" stroke="#2a2118" stroke-width=".5"/>
+      <path d="M50 8 L57 50 L50 92 L43 50Z" fill="#2a2118"/>
+      <path d="M8 50 L50 44 L92 50 L50 56Z" fill="none" stroke="#2a2118"/>
+      <path d="M50 8 L57 50 L50 50Z" fill="#8c2a1c"/>
+      <text x="50" y="6" text-anchor="middle" font-family="IM Fell English SC,serif" font-size="10" fill="#2a2118">N</text>
+    </svg>
+    <div class="masthead">
+      <div class="kicker">Plan Miasta Londynu · 1843</div>
+      <h1>Bankierstwo pana <em>Scrooge'a</em></h1>
+      <p>według ksiąg kantoru Scrooge &amp; Marley</p>
+    </div>
+
+    <article class="card" id="card" aria-live="polite">
+      <div class="meta"><span id="cNum"></span><span class="where" id="cWhere"></span></div>
+      <h2 id="cTitle"></h2>
+      <p id="cText"></p>
+      <blockquote id="cQuote"></blockquote>
+    </article>
+
+    <nav class="bar">
+      <button class="ctrl ghost" id="prev" aria-label="Poprzedni przystanek"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 5 7 12l8 7z"/></svg></button>
+      <button class="ctrl" id="play" aria-label="Pauza"><svg viewBox="0 0 24 24" fill="currentColor" id="playIcon"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></button>
+      <button class="ctrl ghost" id="next" aria-label="Następny przystanek"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m9 5 8 7-8 7z"/></svg></button>
+      <div class="steps" id="steps"></div>
+      <div class="status" id="status"></div>
+    </nav>
+  </main>
+</div>
+
+<script>
+/* ====================== DATA ====================== */
+const W = 2400, H = 1600;
+const STOPS = [
+  { id:"overview", x:1300, y:800, z:.62, num:"Prolog", where:"Londyn, 1843",
+    title:"Mapa jednego skąpca",
+    text:"Ebenezer Scrooge nie ma banku z marmurowym holem. Ma ciasny kantor przy Cornhill, księgę, pióro i weksle. Prześledźmy, dokąd płyną jego pieniądze — i co je zatrzymuje.",
+    quote:"Twardy i ostry jak krzemień, z którego żadna stal nie wykrzesała nigdy hojnego ognia.", cite:"Strofa I",
+    ledger:["Kapitał założycielski","£ ?"] },
+
+  { id:"kantor", x:1400, y:800, z:1.55, num:"I", where:"Kantor przy Cornhill",
+    title:"Scrooge & Marley",
+    text:"Szyld wciąż nosi nazwisko wspólnika, który nie żyje od siedmiu lat — Scrooge nie wydał pieniędzy na zamalowanie go. Firma obraca pożyczkami, wekslami i hipotekami. Biuro jest lodowate: węgiel stoi w pokoju szefa.",
+    quote:"Scrooge nigdy nie zamalował nazwiska starego Marleya.", cite:"Strofa I",
+    ledger:["Farba na szyld","0 s."] },
+
+  { id:"change", x:1490, y:735, z:1.5, num:"II", where:"Royal Exchange",
+    title:"Nazwisko dobre na Giełdzie",
+    text:"„'Change” to Królewska Giełda, serce londyńskiego kredytu. Podpis Scrooge'a ma tu pełną wartość: kupcy przyjmują jego weksle bez wahania. Właśnie na tym polega jego bankierstwo: na zaufaniu, którego sam nikomu nie daje.",
+    quote:"Nazwisko Scrooge'a było dobre na Giełdzie, czegokolwiek się tknął.", cite:"Strofa I",
+    ledger:["Wiarygodność kredytowa","AAA"] },
+
+  { id:"bank", x:1360, y:690, z:1.45, num:"III", where:"Threadneedle Street",
+    title:"Papiery bez pokrycia",
+    text:"Obudzony w nocy Scrooge boi się, że czas stanął, a wtedy jego weksle „płatne trzy dni po okazaniu” stałyby się bezwartościowe, warte tyle co amerykańskie obligacje. To aluzja do stanów USA, które w latach 40. XIX w. przestały spłacać długi u londyńskich inwestorów.",
+    quote:"…byłyby jedynie amerykańską obligacją, gdyby nie było dni do odliczania.", cite:"Strofa II",
+    ledger:["Weksle płatne za 3 dni","+ £"] },
+
+  { id:"mieszkanie", x:1180, y:900, z:1.45, num:"IV", where:"Ponure podwórze",
+    title:"Spadek po Marleyu",
+    text:"Scrooge był jedynym wykonawcą testamentu, zarządcą, spadkobiercą i jedynym żałobnikiem Marleya. Mieszka w dawnych pokojach wspólnika, bez ognia i bez światła, bo „ciemność jest tania”.",
+    quote:"Ciemność jest tania i Scrooge ją lubił.", cite:"Strofa I",
+    ledger:["Spadek po J. Marleyu","+ całość"] },
+
+  { id:"workhouse", x:1880, y:430, z:1.3, num:"V", where:"Dom pracy · Union",
+    title:"„Czy nie ma więzień?”",
+    text:"Dwaj kwestarze proszą o datek dla ubogich. Scrooge odsyła ich do więzień dla dłużników, domów pracy i kieratu z ustawy o ubogich z 1834 r. Płaci podatki na te instytucje i uważa, że to wystarczy.",
+    quote:"Czy nie ma więzień? … A domy pracy Unii — czy jeszcze działają?", cite:"Strofa I",
+    ledger:["Datek dla ubogich","0 s."] },
+
+  { id:"fezziwig", x:820, y:860, z:1.35, num:"VI", where:"Magazyn, ok. 30 lat wcześniej",
+    title:"Szkoła starego Fezziwiga",
+    text:"Tu młody Scrooge uczył się zawodu. Fezziwig wydał na wigilijny bal ułamek tego, co zarabiał, a uczniowie byli mu za to wdzięczni przez całe lata. Duch pokazuje Scrooge'owi, że szef ma władzę nad szczęściem ludzi, nie tylko nad ich pensją.",
+    quote:"Szczęście, które daje, jest tak wielkie, jak gdyby kosztowało majątek.", cite:"Strofa II",
+    ledger:["Bal u Fezziwiga","− kilka funtów"] },
+
+  { id:"belle", x:620, y:640, z:1.4, num:"VII", where:"Wspomnienie",
+    title:"Złoty bożek",
+    text:"Narzeczona Belle zwraca mu słowo. Pieniądz wyparł wszystkie jego inne pragnienia. Z biegiem lat narasta oprocentowanie samotności, a Scrooge tego kosztu nigdy nie wpisał do ksiąg.",
+    quote:"Zastąpił mnie inny bożek… złoty.", cite:"Strofa II",
+    ledger:["Zaręczyny z Belle","− rozwiązane"] },
+
+  { id:"camden", x:560, y:280, z:1.35, num:"VIII", where:"Camden Town",
+    title:"Piętnaście szylingów tygodniowo",
+    text:"Bob Cratchit, kancelista Scrooge'a, zarabia 15 szylingów na tydzień, czyli ok. 39 funtów rocznie. Utrzymuje z tego żonę i szóstkę dzieci. Na Boże Narodzenie stać ich na małą gęś. Tiny Tim choruje, a na lekarza pieniędzy nie ma.",
+    quote:"…piętnaście „bobów” tygodniowo; w sobotę chował do kieszeni zaledwie piętnaście kopii swego imienia.", cite:"Strofa III",
+    ledger:["Pensja B. Cratchita / tydz.","− 15 s."] },
+
+  { id:"dluznicy", x:1560, y:1360, z:1.4, num:"IX", where:"Za rzeką, Southwark",
+    title:"Ulga dłużników",
+    text:"Duch Przyszłości pokazuje młode małżeństwo zadłużone u Scrooge'a. Wiadomość o jego śmierci przyjmują z radością, bo zanim ktoś przejmie dług, zdążą go spłacić. To jedyne uczucie, jakie wywołał jego zgon.",
+    quote:"Komu teraz przypadnie nasz dług? … zanim się dowiemy, będziemy mieć pieniądze.", cite:"Strofa IV",
+    ledger:["Wierzytelność (Caroline)","+ odsetki"] },
+
+  { id:"oldjoe", x:1960, y:1010, z:1.45, num:"X", where:"Lombard starego Joe",
+    title:"Likwidacja majątku",
+    text:"W podłym sklepiku z gałganami i kośćmi praczka, posługaczka i pomocnik przedsiębiorcy pogrzebowego sprzedają rzeczy zmarłego. Idą nawet zasłony od łóżka i koszula, w której miał zostać pochowany. Rynek wycenił Scrooge'a na kilka szylingów.",
+    quote:"Za życia odstraszał każdego, a po śmierci przyniósł nam zysk!", cite:"Strofa IV",
+    ledger:["Wycena u starego Joe","15 s. 6 p."] },
+
+  { id:"cmentarz", x:2160, y:640, z:1.45, num:"XI", where:"Cmentarz przykościelny",
+    title:"Ostatni bilans",
+    text:"Zarośnięty grób, nikt nie płacze. Scrooge czyta na kamieniu swoje nazwisko i po raz pierwszy liczy straty, a nie zyski. Pyta, czy ta przyszłość jest pewna, czy dopiero możliwa.",
+    quote:"Odmienię to, co tu widzę, odmienionym życiem!", cite:"Strofa IV",
+    ledger:["Saldo życia","− wszystko"] },
+
+  { id:"indyk", x:1260, y:960, z:1.5, num:"XII", where:"Drobiarz za rogiem",
+    title:"Restrukturyzacja",
+    text:"Bożonarodzeniowy poranek. Scrooge kupuje u drobiarza indyka dwa razy większego od Tiny Tima i wysyła go dorożką do Camden Town. Kwestarzom obiecuje kwotę „ze wszystkimi zaległymi ratami”, a Bobowi podnosi pensję.",
+    quote:"Podniosę ci pensję i będę się starał pomóc twej borykającej się rodzinie!", cite:"Strofa V",
+    ledger:["Podwyżka dla Boba","+ dla Cratchitów"] },
+
+  { id:"final", x:1220, y:840, z:.72, num:"Epilog", where:"Cały Londyn",
+    title:"Nowa polityka banku",
+    text:"Scrooge został Tiny Timowi drugim ojcem, a dla miasta „tak dobrym przyjacielem, mistrzem i człowiekiem, jakiego znało stare dobre miasto”. Kantor działa dalej, ale w księgach pojawiła się pozycja, której wcześniej nie było.",
+    quote:"Tiny Tim, który NIE umarł…", cite:"Strofa V",
+    ledger:["Zysk netto","bezcenny"] },
+];
+const DWELL = 9000;     // ms per stop
+const FLY   = 2200;     // ms camera flight
+
+/* ====================== MAP DRAWING ====================== */
+const NS = "http://www.w3.org/2000/svg";
+const $ = s => document.querySelector(s);
+const el = (tag, attrs={}, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
+let seed = 1843; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+// Thames centre-line (stylised)
+const riverPts = [[-400,1150],[150,1210],[550,1300],[900,1230],[1200,1160],[1500,1220],[1800,1270],[2100,1170],[2400,1120],[2800,1180]];
+function riverY(x){ for(let i=0;i<riverPts.length-1;i++){const [x1,y1]=riverPts[i],[x2,y2]=riverPts[i+1]; if(x>=x1&&x<=x2){const t=(x-x1)/(x2-x1);return y1+(y2-y1)*(0.5-Math.cos(t*Math.PI)/2);}} return 1180; }
+function smooth(pts){ let d=`M${pts[0][0]},${pts[0][1]}`; for(let i=1;i<pts.length;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i];const mx=(x0+x1)/2;d+=` C${mx},${y0} ${mx},${y1} ${x1},${y1}`;} return d; }
+
+(function drawRiver(){
+  const g = $("#river");
+  const poly = [];
+  for (let x=-400; x<=2800; x+=20) poly.push([x, riverY(x)-46]);
+  for (let x=2800; x>=-400; x-=20) poly.push([x, riverY(x)+46]);
+  el("path",{d:"M"+poly.map(p=>p.join(",")).join("L")+"Z", fill:"#b9c3ae"},g);
+  el("path",{d:"M"+poly.map(p=>p.join(",")).join("L")+"Z", fill:"url(#hatch)"},g);
+  el("path",{d:smooth(riverPts.map(([x,y])=>[x,y-46])),fill:"none",stroke:"#2a2118","stroke-width":2.2,opacity:.7},g);
+  el("path",{d:smooth(riverPts.map(([x,y])=>[x,y+46])),fill:"none",stroke:"#2a2118","stroke-width":2.2,opacity:.7},g);
+  // bridges
+  [[980,"London Bridge"],[640,"Blackfriars"],[1700,"Tower"]].forEach(([x,name],i)=>{
+    const y=riverY(x);
+    el("rect",{x:x-14,y:y-62,width:28,height:124,fill:"#d6c49c",stroke:"#2a2118","stroke-width":2},g);
+    for(let k=-1;k<=1;k++) el("path",{d:`M${x-14},${y+k*34+10} q14,-14 28,0`,fill:"none",stroke:"#2a2118","stroke-width":1.2},g);
+    const t=el("text",{x:x+22,y:y+78,class:"lbl-street","font-size":18},$("#labels")); t.textContent=name;
+  });
+  const t = el("text",{x:300,y:riverY(300)+8,class:"lbl-district","font-size":30},$("#labels")); t.textContent="T A M I Z A";
+  const t2 = el("text",{x:2050,y:riverY(2050)+8,class:"lbl-district","font-size":30},$("#labels")); t2.textContent="T A M I Z A";
+})();
+
+const STREETS = {
+  main:[
+    [[-200,700],[400,690],[800,720],[1100,760],[1400,800],[1800,790],[2300,760],[2700,770]],       // Fleet St → Cornhill → Leadenhall
+    [[1400,800],[1380,600],[1330,350],[1300,-200]],                                                 // Bishopsgate-ish
+    [[600,-200],[580,250],[640,520],[760,720]],                                                     // road to Camden
+    [[980,1160],[1000,950],[1100,760]],                                                             // to London Bridge
+    [[1400,800],[1600,620],[1850,430],[2100,250],[2500,100]],
+    [[-200,420],[300,380],[800,430],[1330,450],[1900,440],[2600,470]],
+    [[1600,1400],[1560,1360],[1500,1280],[1000,1300],[980,1170]],                                   // Southwark
+    [[1700,1170],[1950,1010],[2200,900],[2600,880]],
+  ],
+  minor:[
+    [[1100,760],[1180,900],[1260,960],[1400,1000],[1700,1050]],
+    [[1360,690],[1490,735],[1600,700]],
+    [[820,860],[900,760]],[[620,640],[700,560],[640,520]],[[560,280],[300,250]],
+    [[2160,640],[2050,700],[1800,790]],[[1960,1010],[1900,900],[1800,790]],
+    [[200,900],[500,860],[820,860],[1000,950]],[[1600,1500],[1900,1420],[2300,1380]],
+    [[200,1450],[700,1440],[1000,1300]],[[1880,430],[1900,200]],
+  ]
+};
+(function drawStreets(){
+  const g=$("#streets");
+  for (const kind of ["main","minor"]) for (const s of STREETS[kind]) el("path",{d:smooth(s),class:"street "+kind},g);
+})();
+
+(function drawBlocks(){
+  const g=$("#blocks");
+  const near=(x,y)=>STOPS.some(s=>Math.hypot(s.x-x,s.y-y)<70);
+  for(let i=0;i<1400;i++){
+    const x=-300+rnd()*3000, y=-300+rnd()*2200;
+    const ry=riverY(x); if (Math.abs(y-ry)<80 || near(x,y)) continue;
+    const city = Math.hypot(x-1350,y-780) < 520 ? 1 : 0;
+    const w = (city?18:26)+rnd()*(city?26:40), h=(city?14:20)+rnd()*(city?22:34);
+    if (!city && rnd()<.45) continue;
+    el("rect",{x,y,width:w,height:h,class:"block",transform:`rotate(${(rnd()-.5)*14} ${x} ${y})`},g);
+  }
+  // St Paul's dome
+  const sp=el("g",{transform:"translate(1020,640)"},g);
+  el("ellipse",{cx:0,cy:0,rx:46,ry:30,fill:"#d6c49c",stroke:"#2a2118","stroke-width":2},sp);
+  el("circle",{cx:0,cy:-4,r:16,fill:"#ebdfc4",stroke:"#2a2118","stroke-width":2},sp);
+  el("path",{d:"M0,-20 v-14",stroke:"#2a2118","stroke-width":2},sp);
+  const t=el("text",{x:1020,y:700,class:"lbl-street","font-size":17,"text-anchor":"middle"},$("#labels")); t.textContent="Katedra św. Pawła";
+})();
+
+(function drawLabels(){
+  const L=$("#labels");
+  [["THE CITY",1330,560,44],["CAMDEN TOWN",420,170,34],["SOUTHWARK",1180,1460,34],["WHITECHAPEL",2180,520,30],["HOLBORN",560,560,28],["CLERKENWELL",860,320,26]]
+    .forEach(([s,x,y,f])=>{const t=el("text",{x,y,class:"lbl-district","font-size":f,"text-anchor":"middle"},L);t.textContent=s;});
+  [["Cornhill",1250,785,-3],["Fleet Street",330,676,-1],["Threadneedle St.",1440,660,-20],["Leadenhall St.",1900,775,-2],["Borough High St.",1270,1285,2]]
+    .forEach(([s,x,y,r])=>{const t=el("text",{x,y,class:"lbl-street","font-size":18,transform:`rotate(${r} ${x} ${y})`},L);t.textContent=s;});
+})();
+
+/* pins + routes */
+const pins=[], routes=[];
+(function drawPins(){
+  const P=$("#pins"), R=$("#routes");
+  const tour = STOPS.filter(s=>!["overview","final"].includes(s.id));
+  // full dashed route
+  let all="";
+  tour.forEach((s,i)=>{ if(i===0) return; all += segPath(tour[i-1],s) + " "; });
+  $("#routeBg").setAttribute("d", all);
+  STOPS.forEach((s,i)=>{
+    if (s.id==="overview"||s.id==="final"){ pins.push(null); routes.push(null); return; }
+    const prevStop = STOPS.slice(0,i).reverse().find(p=>p.id!=="overview");
+    if (prevStop){ const r=el("path",{d:segPath(prevStop,s),class:"route"},R); const L=r.getTotalLength(); r.style.strokeDasharray=L; r.style.strokeDashoffset=L; r._len=L; routes.push(r);} else routes.push(null);
+    const g=el("g",{class:"pin",transform:`translate(${s.x},${s.y})`,tabindex:0,role:"button","aria-label":s.title},P);
+    el("circle",{r:24,class:"halo"},g);
+    el("circle",{r:24,class:"disc"},g);
+    const n=el("text",{class:"num",y:1,"font-size":s.num.length>3?14:20},g); n.textContent=s.num;
+    const right = s.x < 2000;
+    const nm=el("text",{class:"name",x:right?36:-36,y:7,"text-anchor":right?"start":"end"},g); nm.textContent=s.title;
+    g.addEventListener("click",e=>{e.stopPropagation();userJump(i);});
+    g.addEventListener("keydown",e=>{if(e.key==="Enter")userJump(i);});
+    pins.push(g);
+  });
+})();
+function segPath(a,b){
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2, dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy)||1;
+  const bend = Math.min(160,len*.22);
+  return `M${a.x},${a.y} Q${mx - dy/len*bend},${my + dx/len*bend} ${b.x},${b.y}`;
+}
+
+/* ====================== CAMERA ====================== */
+const svg=$("#map"), cam=$("#cam");
+let view={x:STOPS[0].x,y:STOPS[0].y,z:STOPS[0].z};
+const VW=1600,VH=1000;
+function applyView(){ cam.setAttribute("transform",`translate(${VW/2},${VH/2}) scale(${view.z}) translate(${-view.x},${-view.y})`); }
+applyView();
+/* ====================== CONTINUOUS TOUR ======================
+   One clock (T, ms) drives everything. The camera glides along the route
+   without ever stopping: it slows near each stop and speeds up between them. */
+const SEG = DWELL;                        // ms from one stop to the next
+const N = STOPS.length;
+const ease = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+const glide = p => p - .82*Math.sin(2*Math.PI*p)/(2*Math.PI);   // never zero velocity
+const mod = (a,n) => ((a%n)+n)%n;
+// card sits bottom-left → bias camera so the pin lands upper-right of centre
+function framed(s){
+  const w=$("#mapwrap"), aspect=w.clientWidth/w.clientHeight;
+  const visW = aspect<VW/VH ? VH*aspect : VW, visH = aspect<VW/VH ? VH : VW/aspect;
+  const dx = w.clientWidth<700 ? 0 : visW*.14, dy = visH*.14;
+  return {x:s.x-dx/s.z, y:s.y+dy/s.z, z:s.z};
+}
+let frames = STOPS.map(framed);
+addEventListener("resize", () => { frames = STOPS.map(framed); });
+
+function camAt(T){
+  const s = T/SEG, i = Math.floor(s), u = glide(s-i);
+  const a = frames[mod(i,N)], b = frames[mod(i+1,N)];
+  const dist = Math.hypot(b.x-a.x, b.y-a.y), dip = Math.min(.3, dist/2800);
+  return { x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u,
+           z:Math.exp(Math.log(a.z)+(Math.log(b.z)-Math.log(a.z))*u)*(1-dip*Math.sin(Math.PI*u)), seg:mod(i,N), u };
+}
+
+let T = 0, last = performance.now(), playing = true, holdUntil = 0, manual = false, blend = null, cur = -1;
+const stepsEl = $("#steps");
+STOPS.forEach((s,i)=>{ const b=document.createElement("div"); b.className="step"; b.innerHTML=`<i></i><span>${s.num} · ${s.title}</span>`; b.onclick=()=>userJump(i); stepsEl.appendChild(b); });
+const stepEls = [...stepsEl.children];
+
+function setStop(i){
+  cur = i; const s = STOPS[i];
+  const card = $("#card"); card.classList.add("out");
+  setTimeout(()=>{
+    $("#cNum").textContent=s.num; $("#cWhere").textContent=s.where;
+    $("#cTitle").textContent=s.title; $("#cText").textContent=s.text;
+    $("#cQuote").innerHTML=`„${s.quote}”<cite>Dickens, Opowieść wigilijna · ${s.cite}</cite>`;
+    card.classList.remove("out");
+  }, 300);
+  pins.forEach((p,k)=>{ if(!p) return; p.classList.toggle("active",k===i); p.classList.toggle("visited",k<i); });
+  renderLedger(i);
+  stepEls.forEach((e,k)=>{ e.classList.toggle("done",k<i); e.classList.toggle("cur",k===i); if(k!==i) e.firstChild.style.width = k<i?"100%":"0"; });
+  $("#status").textContent = `${i+1} / ${N}`;
+}
+function renderLedger(i){
+  const ol=$("#ledger"); ol.innerHTML="";
+  STOPS.slice(0,i+1).forEach((s,k)=>{
+    const [t,v]=s.ledger; const li=document.createElement("li");
+    if(k===i) li.className="now"; else li.style.animation="none";
+    li.innerHTML=`<span class="n">${k===0?"—":s.num}</span><span class="t">${t}</span><span class="v ${/^−/.test(v)?"minus":""}">${v}</span>`;
+    ol.appendChild(li);
+  });
+}
+
+function tick(now){
+  const dt = Math.min(400, now-last); last = now;
+  if (manual && now > holdUntil){ manual = false; blend = { from:{...view}, start:now, dur:1800 }; }
+  if (playing && !manual && now > holdUntil) T += dt;
+
+  if (!manual){
+    const c = camAt(T);
+    if (blend){ const k = ease(Math.min(1,(now-blend.start)/blend.dur));
+      view.x = blend.from.x+(c.x-blend.from.x)*k; view.y = blend.from.y+(c.y-blend.from.y)*k; view.z = blend.from.z+(c.z-blend.from.z)*k;
+      if (k>=1) blend = null;
+    } else { view.x=c.x; view.y=c.y; view.z=c.z; }
+    applyView();
+  }
+  // current stop switches halfway between two stops, so each card gets a full SEG on screen
+  const idx = mod(Math.round(T/SEG), N);
+  if (idx !== cur) setStop(idx);
+  // route draws itself in step with the camera
+  const c = camAt(T);
+  routes.forEach((r,k)=>{ if(!r) return;
+    const off = k<=c.seg ? 0 : k===c.seg+1 ? r._len*(1-c.u) : r._len;
+    r.style.strokeDashoffset = off;
+  });
+  const bar = stepEls[idx].firstChild;
+  bar.style.width = Math.min(100, mod(T - (idx*SEG - SEG/2), N*SEG)/SEG*100) + "%";
+  requestAnimationFrame(tick);
+}
+function userJump(i){
+  i = mod(i,N);
+  blend = { from:{...view}, start:performance.now(), dur:1600 };
+  manual = false; T = Math.floor(T/(N*SEG))*N*SEG + i*SEG; holdUntil = performance.now()+3500;
+}
+
+/* drag & wheel to look around; the tour glides back afterwards */
+(function drag(){
+  const w=$("#mapwrap"); let d=null;
+  const grab = ms => { manual = true; blend = null; holdUntil = performance.now()+ms; };
+  w.addEventListener("pointerdown",e=>{ if(e.target.closest(".card,.bar,.pin")) return; d={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y}; w.classList.add("dragging"); w.setPointerCapture(e.pointerId); grab(8000); });
+  w.addEventListener("pointermove",e=>{ if(!d) return; const r=svg.getBoundingClientRect(); const s=Math.max(VW/r.width,VH/r.height); view.x=d.vx-(e.clientX-d.x)*s/view.z; view.y=d.vy-(e.clientY-d.y)*s/view.z; applyView(); grab(8000); });
+  const up=()=>{ d=null; w.classList.remove("dragging"); };
+  w.addEventListener("pointerup",up); w.addEventListener("pointercancel",up);
+  w.addEventListener("wheel",e=>{ e.preventDefault(); grab(8000); view.z=Math.max(.45,Math.min(2.4,view.z*(e.deltaY<0?1.1:.9))); applyView(); },{passive:false});
+})();
+
+function setPlaying(p){
+  playing=p;
+  $("#play").setAttribute("aria-label",p?"Pauza":"Odtwarzaj");
+  $("#playIcon").innerHTML = p ? '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>' : '<path d="M7 4.5v15l13-7.5z"/>';
+}
+$("#play").onclick=()=>setPlaying(!playing);
+$("#next").onclick=()=>userJump(cur+1);
+$("#prev").onclick=()=>userJump(cur-1);
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight") userJump(cur+1);
+  else if(e.key==="ArrowLeft") userJump(cur-1);
+  else if(e.key===" "){ e.preventDefault(); setPlaying(!playing); }
+});
+
+/* film: plays straight through on loop, never seeks */
+const film=$("#film");
+film.addEventListener("timeupdate",()=>{ if(film.duration) $("#clipbar").style.width=(film.currentTime/film.duration*100)+"%"; });
+
+/* sound toggle */
+$("#sound").onclick=()=>{
+  film.muted=!film.muted; if(!film.muted) film.play();
+  $("#sndwave").setAttribute("d", film.muted ? "M17 9l4 6M21 9l-4 6" : "M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12");
+  $("#sound").setAttribute("aria-label", film.muted ? "Włącz dźwięk" : "Wycisz");
+};
+
+requestAnimationFrame(tick);
+</script>
